@@ -24,7 +24,9 @@ snake-skills/
 
 ### Claude Code
 
-_(尚无内容)_
+| Skill | 说明 |
+|---|---|
+| [snake-digest](claude/snake-digest/) | 一口气搞懂一件事：把陌生概念/行业/技术写成叙事驱动的科普长文，最终导出排版精美的 PDF。灵感来自"小Lin说"。 |
 
 ## 安装到本地
 

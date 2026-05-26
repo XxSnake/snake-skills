@@ -1,15 +1,19 @@
 # Claude Code Skills
 
-本目录用于存放 [Claude Code](https://claude.com/claude-code) 可用的 skills。
+本目录下每个子目录是一个 [Claude Code](https://claude.com/claude-code) 可用的 skill。
 
-目前为空，后续添加的 skill 会按以下结构组织：
+Claude Code 的 skill 默认搜索路径是 `~/.claude/skills/`，本仓库的 `install.ps1` 会把这里的每个子目录软链接过去。安装后用户可以通过 `/<skill-name>` 触发，或者由 agent 在 description 匹配时自动调用。
+
+## 目录约定
+
+每个 skill 至少要有：
 
 ```
 <skill-name>/
 └── SKILL.md       # frontmatter 必须包含 name 和 description
 ```
 
-Claude Code 的 skill 默认搜索路径是 `~/.claude/skills/`，本仓库的 `install.ps1` 会把这里的每个子目录软链接过去。
+可选：`references/`（长引用资料）、`scripts/`（该 skill 用到的脚本）、`assets/`（静态资源）。
 
 ## 与 Codex skill 的差异
 
