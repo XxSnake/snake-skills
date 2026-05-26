@@ -1,0 +1,7 @@
+interface:
+  display_name: "Book-to-Share PDF"
+  short_description: "把一本书拆成中文故事化读书分享 PDF 小册。"
+  brand_color: "#5A321C"
+  default_prompt: "拆解《书名》，生成一份适合分享的中文 PDF 小册。"
+policy:
+  allow_implicit_invocation: true
