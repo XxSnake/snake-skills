@@ -1,0 +1,29 @@
+{
+  "title": "文章标题",
+  "slug": "article-slug",
+  "style": "warm-toned watercolor editorial illustration, warm yellow, ivory, sepia and soft brown palette, subtle aged paper feeling, clean composition, subject clearly readable, soft golden lighting, no text, no labels, no letters, no numbers in the image",
+  "images": [
+    {
+      "id": "img_cover",
+      "filename": "img_cover.png",
+      "role": "cover",
+      "layout": "cover",
+      "size": "2160x3840",
+      "insert_after_heading": null,
+      "caption": "封面图",
+      "prompt_zh": "竖版封面图，宏观、概念化、有视觉冲击力。",
+      "prompt_en": "warm-toned watercolor editorial illustration, vertical cover image, grand cinematic composition, symbolic visual metaphor for the article topic, atmospheric soft golden lighting, no text, no labels, no letters, no numbers in the image"
+    },
+    {
+      "id": "img_01",
+      "filename": "img_01.png",
+      "role": "body",
+      "layout": "normal",
+      "size": "3840x2160",
+      "insert_after_heading": "章节标题",
+      "caption": "图片说明文字",
+      "prompt_zh": "中文画面说明。",
+      "prompt_en": "warm-toned watercolor editorial illustration, landscape 16:9, ... no text, no labels, no letters, no numbers in the image"
+    }
+  ]
+}
