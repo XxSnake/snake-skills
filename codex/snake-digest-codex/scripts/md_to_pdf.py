@@ -22,7 +22,7 @@ CSS_TEMPLATE = r'''
 @page {
   size: A4;
   margin: 26mm 22mm 22mm 22mm;
-  background: #f8f1e4;
+  background: #f7efe1;
   @top-center {
     content: "HEADER_TEXT";
     font-family: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
@@ -70,7 +70,7 @@ body {
     radial-gradient(circle at 18% 12%, rgba(255,255,255,.50) 0, rgba(255,255,255,0) 32%),
     radial-gradient(circle at 82% 88%, rgba(210,185,135,.16) 0, rgba(210,185,135,0) 35%),
     linear-gradient(90deg, rgba(98,76,42,.025), rgba(255,255,255,0) 8%, rgba(98,76,42,.02) 100%),
-    #f8f1e4;
+    #f7efe1;
   text-align: justify;
 }
 
@@ -109,8 +109,8 @@ a { color: #7d5f2f; text-decoration: none; border-bottom: .3pt solid #d2be94; }
   right: 19mm;
   bottom: 22mm;
   padding: 13mm 12mm 11mm 12mm;
-  background: rgba(45,34,23,.72);
-  border: .45pt solid rgba(255,255,255,.28);
+  background: rgba(45,34,23,.58);
+  border: .45pt solid rgba(255,248,230,.24);
   border-radius: 2mm;
   color: #fff8ea;
 }
@@ -232,13 +232,14 @@ code {
   font-size: 9pt;
 }
 pre {
-  background: rgba(63,48,31,.88);
-  color: #fff6df;
-  padding: 4mm;
+  background: rgba(255,250,239,.46);
+  color: #4b3a27;
+  border: .45pt solid rgba(198,170,121,.50);
+  padding: 3.2mm 3.6mm;
   border-radius: 2mm;
   white-space: pre-wrap;
-  font-size: 8.4pt;
-  margin: 6mm 0;
+  font-size: 8.2pt;
+  margin: 5mm 0;
 }
 pre code { background: transparent; color: inherit; padding: 0; }
 
@@ -249,8 +250,8 @@ pre code { background: transparent; color: inherit; padding: 0; }
 .key-point {
   margin: 7mm 0;
   padding: 4.5mm 5mm;
-  background: linear-gradient(135deg, #efe1bf, #f9f1df);
-  border: .55pt solid #d2b77e;
+  background: rgba(255,250,239,.50);
+  border: .55pt solid rgba(190,154,92,.42);
   border-radius: 3mm;
 }
 .key-point .label, .info-label {
@@ -276,19 +277,19 @@ pre code { background: transparent; color: inherit; padding: 0; }
 .big-number .desc { display: block; margin-top: 2.5mm; font-size: 9.5pt; color: #715c3d; letter-spacing: .6pt; }
 
 .number-row { display: flex; gap: 3mm; margin: 7mm 0; }
-.number-card { flex: 1; padding: 4mm 3mm; text-align: center; background: #f0dfbd; border: .5pt solid #d6be8c; border-radius: 2.2mm; }
+.number-card { flex: 1; padding: 4mm 3mm; text-align: center; background: rgba(255,250,239,.48); border: .5pt solid rgba(190,154,92,.42); border-radius: 2.2mm; }
 .number-card .val { display:block; font-family: Georgia, serif; font-size: 18pt; color: #7d531e; font-weight: 700; }
 .number-card .lbl { display:block; margin-top: 1.5mm; font-size: 8.2pt; color: #69553b; }
 
 .analogy-box { display: flex; align-items: stretch; gap: 3mm; margin: 8mm 0; }
 .analogy-box .daily, .analogy-box .pro { flex: 1; padding: 4mm; border-radius: 2.3mm; background: rgba(255,255,255,.42); border: .5pt solid #dcc79f; }
-.analogy-box .pro { background: rgba(233,211,169,.42); }
+.analogy-box .pro { background: rgba(255,250,239,.34); }
 .analogy-box .arrow { width: 8mm; text-align: center; align-self: center; font-size: 17pt; color: #a27b3e; }
 .side-label { display:block; font-size: 7.6pt; color: #967443; letter-spacing: 1pt; margin-bottom: 2mm; font-weight: 700; }
 .side-content { display:block; font-size: 9.5pt; line-height: 1.7; }
 
 .vs-box { display: flex; gap: 4mm; margin: 7mm 0; }
-.vs-card { flex: 1; padding: 4.5mm; border-radius: 2.4mm; border: .55pt solid #d6bd8a; background: rgba(255,255,255,.38); }
+.vs-card { flex: 1; padding: 4.5mm; border-radius: 2.4mm; border: .55pt solid rgba(190,154,92,.42); background: rgba(255,250,239,.34); }
 .vs-title { display:block; font-weight: 700; font-size: 11.4pt; color: #6f4c1d; margin-bottom: 2mm; }
 .vs-content { font-size: 9.5pt; line-height: 1.75; }
 
@@ -299,18 +300,18 @@ pre code { background: transparent; color: inherit; padding: 0; }
 .timeline .what { color: #4b3c2a; }
 
 .flow-steps { display: flex; align-items: stretch; gap: 2mm; margin: 7mm 0; }
-.flow-steps .step { flex: 1; padding: 3.5mm 2.5mm; background: #efe0bf; border: .5pt solid #d2ba85; border-radius: 2mm; text-align: center; font-size: 8.7pt; line-height: 1.5; }
+.flow-steps .step { flex: 1; padding: 3.4mm 2.4mm; background: rgba(255,250,239,.42); border: .5pt solid rgba(190,154,92,.42); border-radius: 2mm; text-align: center; font-size: 8.7pt; line-height: 1.5; }
 .step-num { display:block; font-size: 13pt; color: #8a5b20; margin-bottom: 1mm; }
 .flow-arrow { align-self: center; color: #a27b3e; }
 
-.info-card { margin: 6mm 0; padding: 4mm 4.5mm; background: rgba(255,255,255,.40); border: .5pt dashed #cdb27a; border-radius: 2.2mm; color: #5a4934; }
+.info-card { margin: 6mm 0; padding: 4mm 4.5mm; background: rgba(255,250,239,.34); border: .5pt dashed rgba(190,154,92,.48); border-radius: 2.2mm; color: #5a4934; }
 .caption, .article-img .caption { display:block; text-align:center; margin-top: 2mm; font-size: 8pt; color: #8a7a60; line-height: 1.5; }
 
 .article-img { margin: 8mm auto; text-align: center; }
-.article-img img { display:block; margin:0 auto; border-radius: 2.4mm; border: .6pt solid rgba(120,90,40,.18); box-shadow: 0 2mm 6mm rgba(65,45,20,.16); }
-.article-img.layout-normal img { width: 92%; }
-.article-img.layout-hero { margin: 10mm -5mm; }
-.article-img.layout-hero img { width: 100%; }
+.article-img img { display:block; margin:0 auto; border-radius: 2.4mm; border: .45pt solid rgba(120,90,40,.14); box-shadow: 0 1.2mm 4mm rgba(65,45,20,.10); max-height: 132mm; object-fit: contain; }
+.article-img.layout-normal img { width: 88%; }
+.article-img.layout-hero { margin: 8mm auto; }
+.article-img.layout-hero img { width: 94%; max-height: 138mm; }
 .article-img.layout-small img { width: 66%; }
 .img-missing { padding: 14mm; background: rgba(150,60,40,.08); border: .7pt dashed #b77; color: #9b4636; border-radius: 2mm; }
 

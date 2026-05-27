@@ -8,6 +8,8 @@ description: |
 
 # Snake Digest Codex
 
+版本：v3 · Image2-only · 低色块纸感统一版
+
 > 核心目标：把一个复杂主题，从资料研究、叙事科普、Image2 配图到精美 PDF，完整产出成一份可分享的小册子。
 
 本 Skill 是 `snake-digest` 的 Codex 版。它不再采用“Claude 写图像任务 → 用户去 ChatGPT 生图 → 再回传”的手工流程，而是默认在 Codex 里完成闭环：
@@ -53,6 +55,20 @@ outputs/<slug>/
 
 判断标准：最终 `images/` 目录里的封面图和正文图，必须是 Image2 生成的真实视觉插画，而不是程序生成的矢量示意图。
 
+
+### PDF 视觉硬约束：低色块、纸感统一
+
+本 Skill 的 PDF 目标不是“彩色信息图”，而是“泛黄纸张上的轻杂志小册子”。
+
+硬性规则：
+
+1. 组件背景必须克制，优先半透明纸色、细边框、留白，不要出现大面积实色块。
+2. `key-point`、`number-row`、`flow-steps`、`vs-box`、`info-card` 只能作为点缀，不能连续堆满一页。
+3. 正文不要出现大段代码块、JSON、命令行或图片计划；这些内容放进 `sources.md` 或附属文件，不进入最终 PDF 正文。
+4. `hero` 图片只在开篇强钩子或重大转折处使用，默认正文图片用 `normal`；一篇文章最多 1 张正文 `hero` 图。
+5. Image2 prompt 必须强调低饱和、暖黄、米白、棕褐、旧纸感；即使画面中有商品包装，也要把颜色压低，不要大面积蓝、绿、红、紫、霓虹色。
+6. 如果某页视觉上出现大面积异色块，优先减少组件实色背景和 `hero` 图片面积，而不是改正文内容。
+
 ### 质量优先级
 
 1. 准确性优先于故事性。
@@ -82,7 +98,7 @@ D:\repos\snake-skills\codex\snake-digest-codex\
 可通过 symlink 安装到：
 
 ```text
-~/.codex/skills/snake-digest-codex
+~/.agents/skills/snake-digest-codex
 ```
 
 ---
@@ -436,7 +452,7 @@ small：小图，适合轻提示
 默认风格：
 
 ```text
-warm-toned watercolor editorial illustration, warm yellow, ivory, sepia and soft brown palette, subtle aged paper feeling, clean composition, subject clearly readable, no text, no labels, no letters, no numbers in the image
+warm-toned watercolor editorial illustration, muted low-saturation warm yellow, ivory, sepia and soft brown palette, subtle aged paper feeling, clean composition, subject clearly readable, no large saturated color blocks, no neon blue/green/red/purple areas, no text, no labels, no letters, no numbers in the image
 ```
 
 正文图默认横版 16:9，优先 4K：

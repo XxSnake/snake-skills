@@ -5,7 +5,24 @@
 默认使用：
 
 ```text
-warm-toned watercolor editorial illustration, warm yellow, ivory, sepia and soft brown palette, subtle aged paper feeling, clean composition, subject clearly readable, soft golden lighting, no text, no labels, no letters, no numbers in the image
+warm-toned watercolor editorial illustration, muted low-saturation warm yellow, ivory, sepia and soft brown palette, subtle aged paper feeling, clean composition, subject clearly readable, soft golden lighting, no large saturated color blocks, no neon blue/green/red/purple areas, no text, no labels, no letters, no numbers in the image
+```
+
+
+## 配色约束：避免大面积异色
+
+即使主题里有零食、商品包装、城市灯光，也必须把颜色压进同一套纸感调色盘：
+
+- 主色：米白、旧纸黄、浅赭、棕褐、柔和金色。
+- 可出现少量商品色，但必须低饱和、被水彩纸感稀释。
+- 避免大面积纯蓝、纯绿、正红、紫色、霓虹色、高饱和包装墙。
+- 不要让图片像电商海报、货架广告、PPT 插画。
+- 正文图默认使用 `normal` 布局；`hero` 只用于开篇或重大转折，一篇最多 1 张。
+
+推荐在每个 prompt 末尾追加：
+
+```text
+muted palette, low saturation, colors harmonized with aged ivory paper, no large saturated color blocks, no neon colors, no commercial poster look
 ```
 
 ## 默认尺寸

@@ -66,11 +66,22 @@ def main() -> None:
         if re.search(pattern, text, re.I):
             errors.append(message)
 
+    if re.search(r'^```', text, re.M):
+        warnings.append('article contains fenced code block; it may create a large visual block in PDF. Move code/JSON/commands to sources.md unless essential.')
+        if args.strict:
+            errors.append('strict mode rejects fenced code blocks in final article.md')
+
     placeholders = PLACEHOLDER_RE.findall(text)
     placeholder_ids = [p[0] for p in placeholders]
     plan = load_json(plan_path)
     images = plan.get('images', [])
     plan_ids = [item.get('id') for item in images]
+
+    body_hero_count = sum(1 for item in images if item.get('role') != 'cover' and item.get('layout') == 'hero')
+    if body_hero_count > 1:
+        warnings.append(f'image_plan has {body_hero_count} body hero images; use normal layout by default to preserve paper-like visual consistency')
+        if args.strict:
+            errors.append('strict mode allows at most 1 body hero image')
 
     if 'img_cover' not in plan_ids:
         errors.append('image_plan has no img_cover')
@@ -87,6 +98,8 @@ def main() -> None:
             warnings.append(f'planned image not referenced in article: {img_id}')
         if not prompt:
             warnings.append(f'image has no prompt_en: {img_id}')
+        if prompt and re.search(r'\b(vibrant|neon|colorful|bright colors|high saturation)\b', prompt, re.I):
+            warnings.append(f'image prompt may create saturated colors; add muted low-saturation aged-paper palette: {img_id}')
         path = image_dir / filename
         if not path.exists():
             alt = find_image(image_dir, img_id)
