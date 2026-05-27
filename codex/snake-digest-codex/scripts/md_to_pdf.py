@@ -4,6 +4,7 @@ Snake Digest Codex Markdown → HTML/PDF
 
 Usage:
   python scripts/md_to_pdf.py article.md final.pdf --title "标题" --subtitle "一口气搞懂XXX"
+  # 若输出名为 final.pdf，脚本会自动改名为「标题.pdf」
 """
 
 from __future__ import annotations
@@ -33,8 +34,8 @@ CSS_TEMPLATE = r'''
     padding-bottom: 3mm;
   }
   @bottom-left {
-    content: "SNAKE DIGEST";
-    font-family: "Georgia", "Noto Serif CJK SC", serif;
+    content: "FOOTER_LEFT_TEXT";
+    font-family: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "Georgia", serif;
     font-size: 7pt;
     color: #b9a98a;
     letter-spacing: 2pt;
@@ -61,6 +62,10 @@ html, body {
   padding: 0;
 }
 
+html {
+  background: #f7efe1;
+}
+
 body {
   font-family: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
   font-size: 10.6pt;
@@ -75,6 +80,15 @@ body {
 }
 
 a { color: #7d5f2f; text-decoration: none; border-bottom: .3pt solid #d2be94; }
+
+@media print {
+  html, body {
+    background: #f7efe1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 
 .cover {
   page-break-after: always;
@@ -341,6 +355,25 @@ def extract_title(md_text: str, fallback: str = 'Snake Digest') -> str:
     return m.group(1).strip() if m else fallback
 
 
+def safe_filename(title: str, max_len: int = 80) -> str:
+    """Return a Windows-safe readable filename, keeping Chinese characters."""
+    cleaned = re.sub(r'[<>:"/\\|?*]+', '', title)
+    cleaned = re.sub(r'\s+', '', cleaned).strip().strip('.')
+    cleaned = cleaned.replace('，', '').replace('。', '').replace('？', '').replace('！', '')
+    cleaned = cleaned.replace(',', '').replace('.', '').replace('?', '').replace('!', '')
+    return (cleaned[:max_len] or 'SnakeDigest')
+
+
+def resolve_output_path(output: str | os.PathLike, title: str) -> Path:
+    """Auto-replace generic final/draft.pdf with a title-based filename."""
+    p = Path(output)
+    if p.suffix.lower() != '.pdf':
+        return p
+    if p.stem.lower() in {'final', 'draft', 'output'}:
+        return p.with_name(safe_filename(title) + '.pdf')
+    return p
+
+
 def strip_first_h1(md_text: str, title: str) -> str:
     lines = md_text.splitlines()
     if lines and lines[0].startswith('# '):
@@ -389,12 +422,15 @@ def build_cover(title: str, subtitle: str, author: str, meta_line: str, cover_im
 '''
 
 
-def md_to_html(md_text: str, title: str | None = None, subtitle: str = '一口气搞懂一件事', author: str = 'Snake', meta_line: str | None = None, qr_image: str | None = None, cover_image: str | None = None) -> str:
+def md_to_html(md_text: str, title: str | None = None, subtitle: str = '一口气搞懂一件事', author: str = '@潇潇蛇', meta_line: str | None = None, qr_image: str | None = None, cover_image: str | None = None) -> str:
     actual_title = title or extract_title(md_text)
     actual_meta = meta_line or extract_meta(md_text)
     body_md = strip_first_h1(md_text, actual_title)
     body_html = md_body_to_html(body_md)
-    css = CSS_TEMPLATE.replace('HEADER_TEXT', html.escape(f'SNAKE DIGEST · {actual_title}'))
+    css = (CSS_TEMPLATE
+        .replace('HEADER_TEXT', html.escape(f'SNAKE DIGEST · {actual_title}'))
+        .replace('FOOTER_LEFT_TEXT', html.escape(author or '@潇潇蛇'))
+    )
     cover = build_cover(actual_title, subtitle, author, actual_meta, cover_image, qr_image)
     return f'''<!doctype html>
 <html lang="zh-CN">
@@ -419,7 +455,7 @@ def main() -> None:
     parser.add_argument('output', help='output PDF')
     parser.add_argument('--title', default=None)
     parser.add_argument('--subtitle', default='一口气搞懂一件事')
-    parser.add_argument('--author', default='Snake')
+    parser.add_argument('--author', default='@潇潇蛇')
     parser.add_argument('--meta', default=None)
     parser.add_argument('--qr-image', default=None)
     parser.add_argument('--cover-image', default=None)
@@ -427,15 +463,19 @@ def main() -> None:
     args = parser.parse_args()
 
     md_text = read_file(args.input)
-    html_text = md_to_html(md_text, args.title, args.subtitle, args.author, args.meta, args.qr_image, args.cover_image)
+    actual_title = args.title or extract_title(md_text)
+    output_path = resolve_output_path(args.output, actual_title)
+    html_text = md_to_html(md_text, actual_title, args.subtitle, args.author, args.meta, args.qr_image, args.cover_image)
 
-    html_path = Path(args.html_out) if args.html_out else Path(args.output).with_suffix('.html')
+    html_path = Path(args.html_out) if args.html_out else output_path.with_suffix('.html')
     html_path.write_text(html_text, encoding='utf-8')
     print(f'[OK] HTML: {html_path}')
 
     from weasyprint import HTML
-    HTML(string=html_text, base_url=str(Path(args.input).resolve().parent)).write_pdf(args.output)
-    print(f'[OK] PDF: {args.output} ({Path(args.output).stat().st_size/1024:.1f} KB)')
+    HTML(string=html_text, base_url=str(Path(args.input).resolve().parent)).write_pdf(str(output_path))
+    print(f'[OK] PDF: {output_path} ({output_path.stat().st_size/1024:.1f} KB)')
+    if Path(args.output) != output_path:
+        print(f'[INFO] generic output name replaced by title-based filename: {output_path.name}')
 
 
 if __name__ == '__main__':

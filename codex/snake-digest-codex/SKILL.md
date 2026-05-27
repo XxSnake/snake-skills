@@ -8,7 +8,7 @@ description: |
 
 # Snake Digest Codex
 
-版本：v3 · Image2-only · 低色块纸感统一版
+版本：v4 · Image2-only · 低色块纸感统一版 · 标题文件名与页脚修正版
 
 > 核心目标：把一个复杂主题，从资料研究、叙事科普、Image2 配图到精美 PDF，完整产出成一份可分享的小册子。
 
@@ -34,8 +34,8 @@ outputs/<slug>/
 │  ├─ img_01.png
 │  ├─ img_02.png
 │  └─ ...
-├─ final.html
-└─ final.pdf
+├─ <文章标题>.html
+└─ <文章标题>.pdf
 ```
 
 ### 唯一生图路线：Codex 原生 Image2（硬性要求）
@@ -506,28 +506,34 @@ python scripts/validate_digest.py outputs/<slug>/article.md outputs/<slug>/image
 
 ## 9. PDF 生成
 
+硬性规则：必须使用本 Skill 的 Python 脚本和 WeasyPrint 生成 PDF。不要打开 `final.html` 后用 Chrome / Edge 的打印功能另存为 PDF；浏览器打印可能会在页脚显示 `file:///.../final.html`，还可能因为未启用背景图形而出现白边。
+
 有图最终 PDF：
 
 ```bash
 python scripts/merge_images.py outputs/<slug>/article.md outputs/<slug>/images outputs/<slug>/final.pdf \
   --title "标题" \
   --subtitle "一口气搞懂XXX" \
-  --author "Snake" \
+  --author "@潇潇蛇" \
   --qr-image references/wechat_qr.jpg \
   --cover-image outputs/<slug>/images/img_cover.png
+
+注意：即使命令里暂时写 `final.pdf`，脚本也会自动把输出文件改名为 `标题.pdf`，并同步输出 `标题.html`。不得把正式交付文件保留为通用的 `final.pdf`。
 ```
 
 无图调试 PDF：
 
 ```bash
-python scripts/md_to_pdf.py outputs/<slug>/article.md outputs/<slug>/draft.pdf --title "标题" --subtitle "一口气搞懂XXX"
+python scripts/md_to_pdf.py outputs/<slug>/article.md outputs/<slug>/draft.pdf --title "标题" --subtitle "一口气搞懂XXX" --author "@潇潇蛇"
+
+注意：`draft.pdf` 也会自动改名为 `标题.pdf`，避免每次都叫 `final` 或 `draft`。
 ```
 
 最终交付前必须同时存在：
 
 ```text
-final.pdf
-final.html
+<文章标题>.pdf
+<文章标题>.html
 article.md
 sources.md
 image_plan.json
@@ -547,7 +553,7 @@ images/img_cover.png
 - 章节标题有仪式感，但不能浮夸
 - 每 2-3 个章节至少出现一个视觉组件或插图
 - 图片说明要克制，像杂志 caption
-- 页眉页脚要轻，不抢正文
+- 页眉页脚要轻，不抢正文；正文页脚左侧固定显示 `@潇潇蛇`，不得显示本地文件 URL
 - 最后一节必须有“资料来源与延伸阅读”或在 PDF 后附 sources
 
 不要做到：
@@ -576,7 +582,7 @@ python scripts/validate_digest.py outputs/<slug>/article.md outputs/<slug>/image
 - `image_plan.json` 中所有正文图都在文章中被引用
 - 封面图存在
 - 图片尺寸和角色基本匹配
-- PDF 已生成
+- PDF 已生成，且文件名应为文章标题，不得保留为 `final.pdf`
 - sources.md 存在
 
 发现问题，先修复，不要解释一堆然后交付半成品。
@@ -588,7 +594,7 @@ python scripts/validate_digest.py outputs/<slug>/article.md outputs/<slug>/image
 向用户汇报时，不要复制整篇文章到聊天里。只说明：
 
 ```text
-已完成：final.pdf、article.md、sources.md、image_plan.json、images/
+已完成：<文章标题>.pdf、article.md、sources.md、image_plan.json、images/
 ```
 
 并给出本地路径。若用户要求，再展示摘要、目录或某一节内容。

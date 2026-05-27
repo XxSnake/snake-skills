@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from md_to_pdf import md_to_html  # noqa: E402
+from md_to_pdf import extract_title, md_to_html, resolve_output_path  # noqa: E402
 
 PLACEHOLDER_RE = re.compile(r'<!--IMG:([A-Za-z0-9_\-]+):(.*?)(?::(normal|hero|small))?-->', re.S)
 
@@ -64,7 +64,7 @@ def main() -> None:
     parser.add_argument('output', help='output PDF path')
     parser.add_argument('--title', default=None)
     parser.add_argument('--subtitle', default='一口气搞懂一件事')
-    parser.add_argument('--author', default='Snake')
+    parser.add_argument('--author', default='@潇潇蛇')
     parser.add_argument('--meta', default=None)
     parser.add_argument('--qr-image', default=None)
     parser.add_argument('--cover-image', default=None)
@@ -83,9 +83,11 @@ def main() -> None:
     if missing and args.strict:
         raise SystemExit('[ERROR] strict mode: missing images')
 
+    actual_title = args.title or extract_title(merged_md)
+    output_path = resolve_output_path(args.output, actual_title)
     html_text = md_to_html(
         merged_md,
-        title=args.title,
+        title=actual_title,
         subtitle=args.subtitle,
         author=args.author,
         meta_line=args.meta,
@@ -93,7 +95,6 @@ def main() -> None:
         cover_image=args.cover_image,
     )
 
-    output_path = Path(args.output)
     html_path = output_path.with_suffix('.html')
     html_path.write_text(html_text, encoding='utf-8')
     print(f'[OK] HTML: {html_path}')
@@ -101,6 +102,8 @@ def main() -> None:
     from weasyprint import HTML
     HTML(string=html_text, base_url=str(input_path.resolve().parent)).write_pdf(str(output_path))
     print(f'[OK] PDF: {output_path} ({output_path.stat().st_size/1024:.1f} KB)')
+    if Path(args.output) != output_path:
+        print(f'[INFO] generic output name replaced by title-based filename: {output_path.name}')
 
 
 if __name__ == '__main__':

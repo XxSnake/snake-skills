@@ -27,6 +27,9 @@ New-Item -ItemType SymbolicLink `
 硬性要求：图片必须由 Codex 原生 Image2 生成并保存为本地图片。不得使用 SVG、Mermaid、程序绘图、占位图或 API 备用路线。
 
 
-## v3 low-color paper-unified
+## v4 title-filename and footer fix
 
-This version keeps the Image2-only rule and reduces large solid-color blocks in PDF layout. Use normal images by default; hero images should be rare.
+This version keeps the Image2-only rule, uses @潇潇蛇 as the PDF footer-left text, and automatically renames generic final/draft outputs to the article title.
+
+
+注意：正式 PDF 请用 `scripts/merge_images.py` 或 `scripts/md_to_pdf.py` 生成。不要用浏览器打开 HTML 后打印成 PDF，否则可能出现 `file:///...` 页脚和白边。
