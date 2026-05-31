@@ -46,6 +46,7 @@ CSS_TEMPLATE = r"""
 }
 
 @page :first {
+    margin: 0;
     @top-center { content: none; }
     @bottom-right { content: none; }
     @bottom-left { content: none; }
@@ -58,13 +59,15 @@ body {
     color: #3a3228;
     text-align: justify;
     background: #faf6ee;
+    margin: 0;
 }
 
 /* ══════ 封面 ══════ */
 .cover {
     page-break-after: always;
     position: relative;
-    height: 254mm; /* A4 height minus margins */
+    width: 210mm;
+    height: 297mm; /* full A4 — 满版出血 */
     background: #faf6ee;
     overflow: hidden;
 }
@@ -78,9 +81,9 @@ body {
 .cover .overlay {
     position: absolute;
     bottom: 0;
-    left: -24mm;
-    right: -24mm;
-    padding: 20mm 24mm 15mm 24mm;
+    left: 0;
+    right: 0;
+    padding: 24mm 24mm 22mm 24mm;
     background: linear-gradient(to bottom, rgba(40,32,24,0), rgba(40,32,24,0.75) 35%, rgba(40,32,24,0.88));
     text-align: center;
 }
