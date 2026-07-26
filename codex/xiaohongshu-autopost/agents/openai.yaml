@@ -1,0 +1,6 @@
+interface:
+  display_name: "小红书自动发布助手"
+  short_description: "根据选题生成原创配图文案并审核后自动发布到小红书账号"
+  default_prompt: "根据这个选题制作并发布一篇小红书图文笔记："
+policy:
+  allow_implicit_invocation: true
