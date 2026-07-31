@@ -1,6 +1,7 @@
 {
   "title": "文章标题",
   "slug": "article-slug",
+  "generation_mode": "chatgpt-image-model-raster-only",
   "style": "warm-toned watercolor editorial illustration, muted low-saturation warm yellow, ivory, sepia and soft brown palette, subtle aged paper feeling, clean composition, subject clearly readable, soft golden lighting, no large saturated color blocks, no neon colors, no text, no labels, no letters, no numbers in the image",
   "images": [
     {
@@ -12,7 +13,7 @@
       "insert_after_heading": null,
       "caption": "封面图",
       "prompt_zh": "竖版封面图，宏观、概念化、有视觉冲击力。",
-      "prompt_en": "warm-toned watercolor editorial illustration, vertical cover image, grand cinematic composition, symbolic visual metaphor for the article topic, atmospheric soft golden lighting, no large saturated color blocks, no neon colors, no text, no labels, no letters, no numbers in the image"
+      "prompt_en": "warm-toned watercolor editorial illustration, vertical 9:16 cover image, grand but restrained composition, one clear symbolic visual metaphor for the article topic, muted ivory sepia and soft brown palette, subtle aged-paper feeling, soft golden lighting, no large saturated color blocks, no text, no labels, no letters, no numbers"
     },
     {
       "id": "img_01",
@@ -23,7 +24,7 @@
       "insert_after_heading": "章节标题",
       "caption": "图片说明文字",
       "prompt_zh": "中文画面说明。",
-      "prompt_en": "warm-toned watercolor editorial illustration, landscape 16:9, muted low-saturation aged-paper palette, ... no large saturated color blocks, no text, no labels, no letters, no numbers in the image"
+      "prompt_en": "warm-toned watercolor editorial illustration, landscape 16:9, one clear scene that explains the named article idea, muted low-saturation ivory sepia and soft brown aged-paper palette, readable subject and clean composition, no large saturated color blocks, no text, no labels, no letters, no numbers"
     }
   ]
 }

@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from md_to_pdf import extract_title, md_to_html, resolve_output_path  # noqa: E402
+from md_to_pdf import extract_title, md_to_html, render_pdf, resolve_output_path  # noqa: E402
 
 PLACEHOLDER_RE = re.compile(r'<!--IMG:([A-Za-z0-9_\-]+):(.*?)(?::(normal|hero|small))?-->', re.S)
 
@@ -69,6 +69,7 @@ def main() -> None:
     parser.add_argument('--qr-image', default=None)
     parser.add_argument('--cover-image', default=None)
     parser.add_argument('--strict', action='store_true', help='fail when any image is missing')
+    parser.add_argument('--engine', choices=['auto', 'browser', 'weasyprint'], default='auto')
     args = parser.parse_args()
 
     input_path = Path(args.input)
@@ -99,9 +100,9 @@ def main() -> None:
     html_path.write_text(html_text, encoding='utf-8')
     print(f'[OK] HTML: {html_path}')
 
-    from weasyprint import HTML
-    HTML(string=html_text, base_url=str(input_path.resolve().parent)).write_pdf(str(output_path))
+    engine_name = render_pdf(html_path, output_path, args.engine)
     print(f'[OK] PDF: {output_path} ({output_path.stat().st_size/1024:.1f} KB)')
+    print(f'[INFO] PDF engine: {engine_name}')
     if Path(args.output) != output_path:
         print(f'[INFO] generic output name replaced by title-based filename: {output_path.name}')
 

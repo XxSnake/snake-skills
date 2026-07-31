@@ -14,6 +14,10 @@ import base64
 import html
 import os
 import re
+import shutil
+import subprocess
+import sys
+import tempfile
 from datetime import date
 from pathlib import Path
 
@@ -374,6 +378,119 @@ def resolve_output_path(output: str | os.PathLike, title: str) -> Path:
     return p
 
 
+def find_browser() -> Path | None:
+    """Find a Chromium browser that supports headless PDF export."""
+    candidates: list[str | None] = [
+        shutil.which('msedge'),
+        shutil.which('microsoft-edge'),
+        shutil.which('google-chrome'),
+        shutil.which('chrome'),
+        shutil.which('chromium'),
+        shutil.which('chromium-browser'),
+    ]
+
+    if os.name == 'nt':
+        program_files = os.environ.get('ProgramFiles')
+        program_files_x86 = os.environ.get('ProgramFiles(x86)')
+        local_app_data = os.environ.get('LOCALAPPDATA')
+        for root in (program_files_x86, program_files, local_app_data):
+            if not root:
+                continue
+            candidates.extend([
+                str(Path(root) / 'Microsoft/Edge/Application/msedge.exe'),
+                str(Path(root) / 'Google/Chrome/Application/chrome.exe'),
+            ])
+    elif sys.platform == 'darwin':
+        candidates.extend([
+            '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+            '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+            '/Applications/Chromium.app/Contents/MacOS/Chromium',
+        ])
+
+    seen: set[str] = set()
+    for raw in candidates:
+        if not raw:
+            continue
+        path = Path(raw)
+        key = str(path).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        if path.is_file():
+            return path
+    return None
+
+
+def render_pdf_with_browser(html_path: Path, output_path: Path) -> str:
+    browser = find_browser()
+    if browser is None:
+        raise RuntimeError('No supported Edge, Chrome, or Chromium executable was found')
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path = output_path.resolve()
+    html_uri = html_path.resolve().as_uri()
+
+    with tempfile.TemporaryDirectory(prefix='snake-digest-browser-') as profile_dir:
+        command = [
+            str(browser),
+            '--headless=new',
+            '--disable-gpu',
+            '--disable-background-networking',
+            '--disable-component-update',
+            '--disable-default-apps',
+            '--disable-extensions',
+            '--disable-sync',
+            '--no-first-run',
+            '--no-pdf-header-footer',
+            '--print-to-pdf-no-header',
+            '--allow-file-access-from-files',
+            f'--user-data-dir={profile_dir}',
+            f'--print-to-pdf={output_path}',
+            html_uri,
+        ]
+        creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0) if os.name == 'nt' else 0
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            timeout=120,
+            creationflags=creationflags,
+        )
+
+    if not output_path.exists() or output_path.stat().st_size < 1024:
+        detail = (result.stderr or result.stdout or '').strip()[-1200:]
+        raise RuntimeError(
+            f'Headless browser PDF export failed with exit code {result.returncode}: {detail}'
+        )
+    return f'headless browser ({browser.name})'
+
+
+def render_pdf_with_weasyprint(html_path: Path, output_path: Path) -> str:
+    from weasyprint import HTML
+
+    HTML(filename=str(html_path), base_url=str(html_path.parent)).write_pdf(str(output_path))
+    if not output_path.exists() or output_path.stat().st_size < 1024:
+        raise RuntimeError('WeasyPrint did not create a usable PDF')
+    return 'WeasyPrint'
+
+
+def render_pdf(html_path: Path, output_path: Path, engine: str = 'auto') -> str:
+    """Render an HTML file with the selected engine and return its display name."""
+    errors: list[str] = []
+    order = ('browser', 'weasyprint') if engine == 'auto' else (engine,)
+    for current in order:
+        try:
+            if current == 'browser':
+                return render_pdf_with_browser(html_path, output_path)
+            if current == 'weasyprint':
+                return render_pdf_with_weasyprint(html_path, output_path)
+        except Exception as exc:
+            errors.append(f'{current}: {exc}')
+    raise RuntimeError('No PDF engine succeeded. ' + ' | '.join(errors))
+
+
 def strip_first_h1(md_text: str, title: str) -> str:
     lines = md_text.splitlines()
     if lines and lines[0].startswith('# '):
@@ -460,6 +577,7 @@ def main() -> None:
     parser.add_argument('--qr-image', default=None)
     parser.add_argument('--cover-image', default=None)
     parser.add_argument('--html-out', default=None, help='optional HTML output path')
+    parser.add_argument('--engine', choices=['auto', 'browser', 'weasyprint'], default='auto')
     args = parser.parse_args()
 
     md_text = read_file(args.input)
@@ -471,9 +589,9 @@ def main() -> None:
     html_path.write_text(html_text, encoding='utf-8')
     print(f'[OK] HTML: {html_path}')
 
-    from weasyprint import HTML
-    HTML(string=html_text, base_url=str(Path(args.input).resolve().parent)).write_pdf(str(output_path))
+    engine_name = render_pdf(html_path, output_path, args.engine)
     print(f'[OK] PDF: {output_path} ({output_path.stat().st_size/1024:.1f} KB)')
+    print(f'[INFO] PDF engine: {engine_name}')
     if Path(args.output) != output_path:
         print(f'[INFO] generic output name replaced by title-based filename: {output_path.name}')
 

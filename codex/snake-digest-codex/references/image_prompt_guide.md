@@ -1,4 +1,4 @@
-# Snake Digest Codex Image2 Prompt 指南
+# Snake Digest Codex 图片生成指南
 
 ## 统一风格
 
@@ -29,8 +29,8 @@ muted palette, low saturation, colors harmonized with aged ivory paper, no large
 
 - 封面：2160x3840，竖版 9:16
 - 正文：3840x2160，横版 16:9
-- 如果当前 Image2 环境不支持 4K，可改用封面 1024x1536、正文 1536x1024。
-- 只允许降级尺寸，不允许降级为 SVG、程序绘图、占位图或 API 路线。
+- 如果当前内置图片工具不支持 4K，可改用封面 1024x1536、正文 1536x1024。
+- 只允许降低尺寸，不允许用 SVG、程序绘图、占位图或二维码代替。
 
 ## Prompt 类型
 
@@ -64,11 +64,12 @@ warm-toned watercolor editorial illustration, a chain of simple scenes connected
 
 ## 硬性规则
 
-1. 必须调用 Codex 原生 Image2 生图。
+1. 必须使用 ChatGPT 内置图像模型生图：遵循 `imagegen` 技能，并调用 Codex 内置 `image_gen` 工具。
 2. 不要让图片承担文字说明功能。
 3. 不要生成数据图表，数据图表用 HTML 组件。
 4. 不要出现文字、标签、数字。
 5. 不要画真实公众人物肖像。
 6. 图片必须服务于理解，不是装饰。
-7. 严禁用 SVG、Mermaid、HTML/CSS、Matplotlib、Pillow、Canvas、占位图、图标拼贴、截图或程序绘图替代 Image2。
-8. 如果 Image2 无法生成或无法保存到 `images/`，停止任务并报告失败，不要继续合成 PDF。
+7. 最终只接受 PNG、JPG、JPEG 或 WebP 位图。严禁生成或使用 SVG，也不得把 SVG 转成位图；同样不能用 Mermaid、HTML/CSS、Matplotlib、Pillow、Canvas、占位图、图标拼贴、二维码、截图或程序绘图替代模型生成的插画。
+8. 每个不同画面单独调用一次内置工具。生成后先检查，再从 `$CODEX_HOME/generated_images/` 复制或移动到项目 `images/` 目录，并使用计划中的稳定文件名。
+9. 不得静默切换到其他图像模型或需要 API 密钥的路线。ChatGPT 内置图像模型不可用时停止合成；只有用户明确同意时才按 `imagegen` 技能的备用流程继续。
