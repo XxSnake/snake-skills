@@ -40,6 +40,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     BaseDocTemplate,
     Frame,
@@ -78,6 +79,44 @@ class Meta:
 
 
 def register_fonts() -> None:
+    global FONT_REGULAR, FONT_BOLD
+
+    skill_dir = Path(__file__).resolve().parents[1]
+    windir = Path(os.environ.get("WINDIR", "C:/Windows"))
+    serif_candidates = [
+        skill_dir / "assets/fonts/NotoSerifSC-VF.ttf",
+        windir / "Fonts/NotoSerifSC-VF.ttf",
+        Path("/usr/share/fonts/truetype/noto/NotoSerifCJK-Regular.ttc"),
+        Path("/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc"),
+        Path("/System/Library/Fonts/Supplemental/Songti.ttc"),
+    ]
+    heading_candidates = [
+        skill_dir / "assets/fonts/NotoSansSC-VF.ttf",
+        windir / "Fonts/NotoSansSC-VF.ttf",
+        Path("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"),
+        Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"),
+        Path("/System/Library/Fonts/PingFang.ttc"),
+    ]
+
+    serif_path = next((path for path in serif_candidates if path.is_file()), None)
+    heading_path = next((path for path in heading_candidates if path.is_file()), serif_path)
+    if serif_path and heading_path:
+        try:
+            pdfmetrics.registerFont(TTFont("Booklet-Serif", str(serif_path)))
+            pdfmetrics.registerFont(TTFont("Booklet-Bold", str(heading_path)))
+            pdfmetrics.registerFontFamily(
+                "Booklet-Serif",
+                normal="Booklet-Serif",
+                bold="Booklet-Bold",
+                italic="Booklet-Serif",
+                boldItalic="Booklet-Bold",
+            )
+            FONT_REGULAR = "Booklet-Serif"
+            FONT_BOLD = "Booklet-Bold"
+            return
+        except Exception as exc:
+            print(f"Embedded font registration failed, using CID fallback: {exc}", file=sys.stderr)
+
     try:
         pdfmetrics.registerFont(UnicodeCIDFont(FONT_REGULAR))
     except Exception:
@@ -257,7 +296,13 @@ def quote_block(lines: List[str], style: ParagraphStyle, width: float):
 
 
 def list_block(items: List[str], style: ParagraphStyle, ordered: bool = False):
-    flow_items = [ListItem(Paragraph(escape(x), style), leftIndent=12) for x in items]
+    if ordered:
+        flow_items = [
+            ListItem(Paragraph(escape(item), style), leftIndent=12, value=index)
+            for index, item in enumerate(items, start=1)
+        ]
+    else:
+        flow_items = [ListItem(Paragraph(escape(item), style), leftIndent=12) for item in items]
     return ListFlowable(
         flow_items,
         bulletType="1" if ordered else "bullet",
@@ -265,7 +310,7 @@ def list_block(items: List[str], style: ParagraphStyle, ordered: bool = False):
         bulletFontName=FONT_REGULAR,
         bulletFontSize=8,
         bulletColor=H2,
-        start="1",
+        start=1 if ordered else None,
     )
 
 

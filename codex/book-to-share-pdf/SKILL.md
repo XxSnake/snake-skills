@@ -1,517 +1,175 @@
 ---
 name: book-to-share-pdf
-description: Use this skill when the user gives a book title and asks to 拆书, 解构一本书, 做读书分享, 读书会分享, 讲给别人听, 写分享稿, or generate a PDF reading booklet. Research reliable public sources first, seek legal full text or substantial previews when needed, decide the best sharing strategy for the book type, then produce one Chinese, story-driven, source-grounded, old-paper-style PDF booklet. Do not use for engineering textbooks, programming manuals, paper reviews, pure purchase links, simple catalog lookup, translation-only tasks, mind maps, or slide decks unless explicitly asked.
+description: Use this skill when the user explicitly invokes book-to-share-pdf, or gives a book title and asks for a Chinese PDF reading booklet, 拆书 PDF, 读书会 PDF, 读书分享小册, or a shareable book handout. Research reliable public sources, identify the correct book and edition, choose a suitable sharing strategy, then create one story-driven, source-grounded, old-paper-style PDF. Do not invoke for a text-only summary or sharing draft unless the user also wants a PDF, and do not use for engineering manuals, paper reviews, purchase links, translation-only work, mind maps, or slide decks.
 ---
 
-# Book-to-Share PDF Skill
+# Book-to-Share PDF
 
-## Purpose
+把一本书真正读懂，再用中文讲成一份适合分享、可以直接阅读的 PDF 小册。成品不是机械摘要，也不是章节流水账，而是有主线、有故事、有判断、能追溯来源的二次讲述。
 
-Turn a book title into a Chinese PDF reading booklet that helps the user share the book with others.
+默认语气是“会讲故事的读书人”：清楚、真诚、有画面感，但不夸张，不虚构，不装成学术论文。
 
-The goal is not to summarize a book mechanically. The goal is to understand the book, judge how it should be told, and transform it into a story-driven, source-grounded, readable booklet that can support oral sharing, article sharing, or a reading-club discussion.
+## 完成标准
 
-Default voice:
+只有同时满足以下条件，任务才算完成：
 
-> 会讲故事的读书人。
+- 书名、作者、版本或译本没有认错；同名书会影响内容时已确认。
+- 关键事实、作者背景、出版信息和核心观点有可靠来源支撑。
+- 文章有一条清晰主线，能让没读过原书的人听懂并愿意继续了解。
+- 重要事实使用少量编号来源标记，末尾有完整“资料来源”。
+- 没有大段复制受版权保护的正文，也没有编造引文、情节或作者意图。
+- 默认只交付一个命名清楚的中文 PDF。
+- PDF 使用可嵌入的中文字体，换设备后文字仍可靠。
+- 自动检查通过，并把每一页都渲染成图片逐页查看；不是只抽查前三页。
 
-This means: clear, humane, thoughtful, vivid, but not sensationalized; grounded in sources, but not academic and stiff.
+## 使用边界
 
-## Final Deliverable
+适合：
 
-Produce exactly one final user-facing artifact by default:
+- 用户给出书名并要求拆书 PDF、读书会材料或可分享小册。
+- 用户提供合法电子书、摘录、笔记或资料，并要求据此制作 PDF。
+- 用户明确调用本技能，即使只给了一个简短题目。
 
-```text
-《书名》拆书分享小册.pdf
+不适合：
+
+- 只要聊天回答、文字摘要或分享稿，没有要求 PDF。
+- 复杂概念、行业、技术、历史事件或商业问题，而不是一本具体的书；这类任务使用 `snake-digest-codex`。
+- 工程教材、编程手册、论文综述、纯翻译、购买链接、思维导图或幻灯片。
+
+## 必读参考
+
+开始工作前完整读取：
+
+1. `references/research_rules.md`：资料可信度、版权边界和来源记录。
+2. `references/book_type_strategy.md`：按小说、非虚构、思想类等书型选择讲法。
+3. `references/pdf_style_guide.md`：旧纸张风格、排版和视觉检查标准。
+
+## 工作流程
+
+### 1. 确认是哪一本书
+
+从用户输入和公开资料确认：
+
+- 规范书名
+- 作者
+- 原书语言
+- 首版或目标版本
+- 译者或译本（若会影响内容）
+- 用户提供的材料和期望读者
+
+如果同名书、不同作者或不同译本会明显改变结果，只问一个简短问题再继续。若差异不影响这次分享，可采用最常见版本，并在资料记录中说明。
+
+### 2. 搜集可靠材料
+
+优先顺序：
+
+1. 用户合法提供的原书、摘录和笔记。
+2. 出版社、作者、图书馆、权威档案、官方访谈。
+3. 合法公开全文或可核实的预览。
+4. 高质量书评、学术资料和可靠媒体文章，用于交叉验证。
+
+不要把搜索摘要、营销文案、零散短评或 AI 生成页面当成主要依据。涉及近期版本、奖项、销售、作者近况等易变化信息时，必须联网核实。
+
+研究时建立来源笔记，至少记录标题、作者或机构、链接、发布日期或访问日期、支撑了哪条内容。关键事实尽量由原始来源或两个独立可靠来源支持。
+
+只引用必要的短句。能转述就转述；不要提供大段原文，也不要把找不到合法全文包装成“已经读完整本书”。
+
+### 3. 选择分享主线
+
+先判断书型，再决定讲法。参考 `references/book_type_strategy.md`，不要把所有书都套进同一目录。
+
+至少明确：
+
+- 一句话钩子：为什么现在值得讲这本书。
+- 一个核心问题：全篇要回答什么。
+- 三到五个关键转折、观点或人物节点。
+- 一个诚实边界：书的局限、争议或不适用之处。
+- 一个落点：读者可以带走什么，而不是泛泛喊口号。
+
+小说优先讲人物选择、冲突和意义；非虚构优先讲问题、证据和推理；思想类著作优先讲概念产生的背景、反常识处和现实影响。
+
+### 4. 写成 Markdown 草稿
+
+建议使用下面的最小结构，可按书型调整，不要为了凑目录硬加章节：
+
+```markdown
+---
+title: 书名
+author: 作者
+subtitle: 一句能抓住人的副标题
+book_type: 小说 / 非虚构 / 思想类 / 其他
+date: YYYY-MM-DD
+hook: 这本书真正要追问的问题
+---
+
+# 开场：为什么要讲这本书
+
+## 故事或问题从哪里开始
+
+## 三到五个关键节点
+
+## 这本书最锋利的地方
+
+## 它没有解决什么
+
+## 读完可以带走什么
+
+## 资料来源
+
+1. 来源标题，作者或机构，链接，日期。
 ```
 
-Intermediate files may be created during work, for example:
+写作要求：
 
-```text
-draft.md
-booklet.html
-booklet.pdf
-sources.json
+- 用自然中文讲述，不模仿原作者文风。
+- 先给读者情境，再解释观点；段落短而连贯。
+- 关键事实在句末用 `[1]`、`[2]` 等稀疏标记，不要每句话都塞来源号。
+- 直接引语必须能核对，保持短小，并标明来源。
+- 明确区分原书观点、外部事实和本次分享的解释。
+- 末尾“资料来源”要与正文编号对应，不能只是空模板。
+
+### 5. 生成 PDF
+
+将草稿和成品放在当前任务的工作目录，不写回技能目录。默认 A5；用户明确要求打印或大版面时用 A4。
+
+```powershell
+python <skill-dir>/scripts/build_booklet_pdf.py draft.md -o "《书名》拆书分享小册.pdf"
 ```
 
-But only the final PDF should be presented to the user unless they explicitly ask for drafts, source files, or implementation details.
+如需 A4：
 
-## Default Language
-
-Use Chinese by default.
-
-If the original book is in another language, keep original names or key terms where useful, but explain them in Chinese.
-
-## Operating Principles
-
-### 1. Research before writing
-
-Do not rely only on model memory when the user provides only a book title.
-
-Before drafting the booklet, research reliable materials such as:
-
-- Publisher page
-- Official author page
-- Author interviews, lectures, essays, podcasts, or public talks
-- Table of contents
-- Official description
-- Legal previews or excerpts
-- Public-domain full text, when applicable
-- Library or database records, when available
-- Serious reviews from reputable media, journals, scholars, or established book-review platforms
-- Reader reviews only as supplementary evidence, never as the main factual base
-
-For detailed research rules, read `references/research_rules.md`.
-
-### 2. Confirm the exact book
-
-Many books have similar or identical titles. First identify:
-
-- Chinese title
-- Original title, if any
-- Author
-- Translator, if relevant
-- Publisher or edition used
-- Publication year
-- Whether the book is fiction, nonfiction, essay collection, academic work, biography, etc.
-
-If there are multiple plausible books and the user did not specify which one, make a best-effort choice using context. If ambiguity remains, state the selected version clearly inside the PDF.
-
-### 3. Use legal and reliable materials
-
-If public information is insufficient, try to locate legal full text, substantial previews, authorized excerpts, or public-domain versions.
-
-Allowed material types include:
-
-- Public-domain text
-- Official publisher previews
-- Authorized excerpts
-- Author-posted material
-- Library-accessible metadata or previews
-- Legitimate book platform previews
-- Serious secondary sources
-
-Do not rely on obviously pirated full-text copies as the default source.
-
-### 4. Do not pretend to have read the full book
-
-If only public summaries, reviews, interviews, or partial previews are available, do not write as if the full text has been fully read.
-
-Clearly distinguish:
-
-- Confirmed facts
-- Source-supported interpretation
-- Reasonable inference
-- Insufficient information
-
-If the material is not enough for a full reconstruction, mark the booklet as:
-
-```text
-公开资料版拆解，尚不足以替代全文精读。
+```powershell
+python <skill-dir>/scripts/build_booklet_pdf.py draft.md -o "《书名》拆书分享小册.pdf" --page-size A4
 ```
 
-### 5. Shareability is the main standard
+脚本会优先使用可嵌入的中文字体。若只能退回到不可嵌入字体，后续检查必须失败，不能把可能在别的设备上缺字的 PDF 当成成品。
 
-Every section should help the user explain the book to someone else.
+### 6. 自动检查并逐页查看
 
-Avoid:
-
-- Chapter-by-chapter mechanical summary
-- Dry academic overview
-- Empty inspirational language
-- Marketing-style exaggeration
-- Unsupported claims
-- Overloaded quotations
-- Excessive name-dropping
-
-Prefer:
-
-- A strong central question
-- Conflict and tension
-- Clear argument flow
-- Story, scene, or example
-- Memorable but restrained phrasing
-- Practical sharing cues
-- Honest limits and caveats
-
-## Work Process
-
-Follow this sequence unless the user gives a stronger instruction.
-
-### Step 1: Identify the book
-
-Determine the exact book and edition as far as possible.
-
-Record:
-
-- Book title
-- Original title
-- Author
-- Translator
-- Publisher
-- Year
-- Genre/type
-- Known editions or translation differences
-
-### Step 2: Research and source assessment
-
-Collect enough source material to support a responsible booklet.
-
-Create an internal source assessment with:
-
-- Source title
-- Source type
-- Reliability level
-- What it supports
-- Whether it gives direct access to content, such as table of contents, excerpts, or full text
-
-Suggested reliability tiers:
-
-1. Primary source: book text, official excerpt, author interview, publisher page
-2. Strong secondary source: reputable review, academic article, serious media review
-3. Weak secondary source: casual blog post, short platform summary, anonymous notes
-4. Reader signal: reviews and comments, useful for reception but not for factual claims
-
-### Step 3: Decide whether more text is needed
-
-Judge whether the available sources are enough.
-
-If enough:
-
-- Proceed with a public-source-based booklet.
-
-If not enough:
-
-- Search for legal full text, authorized excerpts, public-domain versions, or more substantial previews.
-
-If still not enough:
-
-- Continue with a limited booklet only if useful.
-- Clearly label its limits.
-- Do not fabricate details.
-
-### Step 4: Classify the book type
-
-Classify the book into one or more of these types:
-
-- 思想哲学型
-- 社科洞察型
-- 历史叙事型
-- 商业管理型
-- 人物传记型
-- 文学小说型
-- 心理成长型
-- 投资财经型
-- 文化评论型
-- 经典名著型
-
-Mixed classifications are allowed, for example:
-
-```text
-社科洞察型 + 文化评论型
+```powershell
+python <skill-dir>/scripts/verify_pdf.py "《书名》拆书分享小册.pdf" --render --out-dir renders
 ```
 
-For type-specific guidance, read `references/book_type_strategy.md`.
+自动检查必须确认：文件可打开、页数正常、每页文字可提取、纸张尺寸正确、至少一种中文字体已嵌入、正文中能看到“资料来源”。
 
-### Step 5: Choose the expression strategy
+随后逐张打开 `renders/page_*.png`，检查全部页面：
 
-Select the best way to tell this book.
+- 封面标题、作者和副标题是否完整。
+- 中文是否缺字、重叠、乱码或被裁切。
+- 有序列表是否连续显示 1、2、3，而不是全部显示 1。
+- 标题是否孤悬在页尾，段落和引用框是否挤压。
+- 页码、边距、底色和跨页节奏是否一致。
+- 最后一页是否完整，资料来源是否清楚可读。
 
-Available strategies:
+任何一页有问题，都要修改后重新生成、重新检查，并再次查看受影响页；不能只解释问题。
 
-- 冲突型: for philosophy, social criticism, intellectual tension, moral dilemma
-- 故事型: for fiction, biography, history, personal growth
-- 问题型: for theory, social science, psychology, management
-- 案例型: for business, investing, management, applied nonfiction
-- 命运型: for literature, biography, historical figures
-- 观点型: for essays, cultural criticism, idea-heavy books
-- 读书会讨论型: for books with open questions and interpretive space
+## 失败与降级
 
-Always include this judgment in the booklet:
+- 找不到足够可靠材料：说明缺口，不编造，不生成看似完整的成品。
+- 只能找到简介而没有足够内容：把范围收窄为“基于公开资料的导读”，并明确标注；不要声称完整拆书。
+- 字体无法嵌入或 PDF 无法逐页渲染：停止交付，先修复环境或排版。
+- 用户要求大段受版权保护原文：只提供合规短引和自己的讲解。
 
-```text
-这本书适合怎么讲。
-这本书不适合怎么讲。
-```
+## 交付
 
-Example:
-
-```text
-这本书不适合按章节复述。它更适合用一个核心冲突来讲，因为它真正有传播力的部分不是知识点，而是问题感。
-```
-
-### Step 6: Build the serious decomposition
-
-Answer these questions before writing the shareable prose:
-
-- What is the book really about?
-- What central question is it trying to answer?
-- Why did the author write it?
-- What is the book's structure or narrative logic?
-- What are the 3 to 7 most shareable ideas?
-- What examples, scenes, arguments, or historical context support those ideas?
-- What is easily misunderstood?
-- What are the book's limits, blind spots, or controversies?
-- Why does this book still matter to the intended reader now?
-
-### Step 7: Translate the decomposition into a shareable narrative
-
-Write the main sharing essay as if the user will tell it to others.
-
-The main essay should have:
-
-- A hook at the beginning
-- A real problem or conflict
-- A reason this book appears at this moment
-- A clear explanation of the book's main line
-- The most shareable ideas woven into the narrative
-- Examples, scenes, author background, or historical context when helpful
-- A sober note on limits or controversy
-- A closing that leaves the reader with a question, judgment, or aftertaste
-
-Do not force a fixed length. Make it complete enough for sharing. The user can delete later.
-
-## PDF Content Structure
-
-The PDF should follow this structure by default.
-
-### 1. Cover
-
-Include:
-
-- Book title
-- Author
-- Subtitle for the booklet
-- Book decomposition type
-- Date generated
-- One short hook sentence
-
-Tone: quiet, bookish, restrained, like an old book flyleaf.
-
-### 2. 拆书前判断
-
-Include:
-
-- Book type
-- Best expression strategy
-- Why this strategy fits
-- How not to tell this book
-- Whether public sources are enough
-- Whether full text, excerpt, or secondary sources were used
-- Confidence level
-
-Use one of these confidence labels:
-
-- 高: substantial primary material or full text available
-- 中: reliable public sources and excerpts are sufficient for the main argument
-- 低: public sources are limited; interpretation should be treated as preliminary
-
-### 3. 一句话讲透这本书
-
-Write no more than 200 Chinese characters.
-
-This should be the book's central switch, not a bland summary.
-
-It should contain judgment and tension.
-
-### 4. 全书主线
-
-Reconstruct the book according to reader understanding, not necessarily chapter order.
-
-Recommended flow:
-
-1. What question the book starts from
-2. What contradiction the author sees
-3. How the author develops the argument or story
-4. Where the book finally lands
-5. Why it matters now
-
-### 5. 最值得传播的观点
-
-Choose 3 to 7 ideas.
-
-For each idea, include:
-
-- Idea title
-- Explanation
-- Source basis or book basis
-- How to say it when sharing
-- Likely misunderstanding
-
-### 6. 故事化分享稿
-
-This is the main body.
-
-It should be directly usable for oral sharing, article adaptation, or reading-club introduction.
-
-Avoid repetitive structure like:
-
-```text
-第一章讲……第二章讲……第三章讲……
-```
-
-Prefer narrative structure:
-
-```text
-开场问题 -> 现实冲突 -> 引出本书 -> 展开核心观点 -> 穿插故事/案例/背景 -> 回到读者处境 -> 诚实指出局限 -> 有余味地收束
-```
-
-### 7. 分享提示
-
-Keep this practical and concise.
-
-Include:
-
-- Best opening line for oral sharing
-- Possible article titles
-- Reading-club questions
-- Parts that can be cut
-- Parts that should not be cut
-
-### 8. 资料来源
-
-Place all sources at the end.
-
-For each source, include:
-
-- Source title
-- Publisher/platform/author if available
-- URL or bibliographic detail if available
-- What the source supports
-- Access date if relevant
-
-Do not clutter the body with dense citations. But make important claims traceable through the source list.
-
-## PDF Visual Style
-
-Default style name:
-
-```text
-旧书页 · 读书人手稿风
-```
-
-Use `references/pdf_style_guide.md` for the full visual system.
-
-Defaults:
-
-- A5 portrait
-- Warm old-paper background
-- Serif/Song-style Chinese typography
-- Low-saturation brown palette
-- Subtle paper texture
-- Readable line height and margins
-- Source list preserved at the end
-
-## Implementation Guidance
-
-Recommended skill folder:
-
-```text
-book-to-share-pdf/
-├── SKILL.md
-├── references/
-│   ├── book_type_strategy.md
-│   ├── research_rules.md
-│   └── pdf_style_guide.md
-├── assets/
-│   ├── paper_texture.svg
-│   └── style.css
-└── scripts/
-    ├── build_booklet_pdf.py
-    └── verify_pdf.py
-```
-
-### Suggested internal files
-
-- `draft.md`: complete booklet content in Markdown
-- `sources.json`: structured source list and confidence assessment
-- `booklet.html`: styled HTML before PDF rendering, optional
-- `booklet.pdf`: generated final PDF
-
-### PDF generation
-
-Use the included script when deterministic local generation is needed:
-
-```bash
-python scripts/build_booklet_pdf.py draft.md -o booklet.pdf
-python scripts/verify_pdf.py booklet.pdf --render
-```
-
-Verify:
-
-- PDF exists
-- PDF has pages
-- Chinese characters render correctly
-- No obvious overflow
-- Sources section is included
-- Final file name is clear
-
-## Quality Checklist
-
-Before final delivery, check the following.
-
-### Content
-
-- The exact book and edition are identified as well as possible
-- The sources are reliable enough for the claimed level of analysis
-- The booklet states whether it is based on full text, excerpts, or public sources
-- The book's central question is clear
-- The book type and expression strategy are explicit
-- The 3 to 7 shareable ideas are strong and not generic
-- The main sharing essay is usable, not just notes
-- Limits, disputes, or blind spots are acknowledged
-- The source list is preserved at the end
-
-### Expression
-
-- The opening has a hook
-- The narrative has tension
-- The explanation is understandable to non-specialists
-- The tone is thoughtful but not stiff
-- There is no unsupported sensationalism
-- There is no fake certainty
-- The language sounds like a person sharing a book, not a machine summarizing chapters
-
-### PDF
-
-- A5 portrait format unless otherwise requested
-- Warm old-paper look
-- Readable Chinese font
-- Page texture is subtle
-- No text overflow
-- Page numbers work
-- The PDF can be opened normally
-
-## Failure and Degradation Rules
-
-If the task cannot be completed fully, still produce the best useful result without pretending.
-
-### If the book is ambiguous
-
-State which book was selected and why.
-
-### If sources are thin
-
-Create a limited public-source version and label it clearly.
-
-### If no reliable source is found
-
-Do not fabricate a booklet. Instead, explain what was found, why it is insufficient, and what the user can provide to continue, such as table of contents, excerpts, notes, or a legal text copy.
-
-### If PDF generation fails
-
-Try one alternate generation path.
-
-If PDF still fails, preserve the complete Markdown draft and explain that PDF generation failed, including the likely cause and the file that was produced instead.
-
-## User-Facing Final Response
-
-When the PDF is ready, respond briefly in Chinese.
-
-Include:
-
-- A link to the generated PDF
-- A short note on whether it is based on full text, excerpts, or public sources
-- Any major limitation that matters
-
-Do not paste the whole booklet into chat unless the user asks.
+默认只向用户提供一个最终 PDF，并用简单中文说明：拆的是哪本书、成品有多少页、已完成逐页检查。除非用户要求，不附草稿、渲染图、来源笔记或实现过程。
