@@ -18,14 +18,20 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import uuid
 from datetime import date
 from pathlib import Path
 
 import markdown
 
+PAGE_SIZES = {
+    'A4': ('210mm', '297mm', (595.3, 841.9)),
+    'A5': ('148mm', '210mm', (419.5, 595.3)),
+}
+
 CSS_TEMPLATE = r'''
 @page {
-  size: A4;
+  size: PAGE_SIZE;
   margin: 26mm 22mm 22mm 22mm;
   background: #f7efe1;
   @top-center {
@@ -71,7 +77,8 @@ html {
 }
 
 body {
-  font-family: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
+  font-family: "Noto Serif SC", "Noto Serif CJK SC", "Songti SC", "STSong", "SimSun", serif;
+  font-weight: 400;
   font-size: 10.6pt;
   line-height: 1.92;
   color: #3d3428;
@@ -96,8 +103,8 @@ a { color: #7d5f2f; text-decoration: none; border-bottom: .3pt solid #d2be94; }
 
 .cover {
   page-break-after: always;
-  width: 210mm;
-  height: 297mm;
+  width: PAGE_WIDTH;
+  height: PAGE_HEIGHT;
   position: relative;
   overflow: hidden;
   background: #e9dcc4;
@@ -241,6 +248,8 @@ table {
 }
 th { background: #e4d2ad; color: #473722; font-weight: 700; }
 th, td { border: .45pt solid #d6c39e; padding: 2.8mm 3mm; vertical-align: top; }
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; break-inside: avoid; }
 
 code {
   font-family: "Consolas", "Menlo", monospace;
@@ -346,8 +355,8 @@ def file_to_data_uri(path: str | os.PathLike | None) -> str | None:
     if not path:
         return None
     p = Path(path)
-    if not p.exists():
-        return None
+    if not p.is_file():
+        raise FileNotFoundError(f'image file not found: {p}')
     ext = p.suffix.lower()
     mime = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp'}.get(ext, 'image/png')
     data = base64.b64encode(p.read_bytes()).decode('ascii')
@@ -428,6 +437,7 @@ def render_pdf_with_browser(html_path: Path, output_path: Path) -> str:
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path = output_path.resolve()
+    temporary_output = output_path.with_name(f'.{output_path.stem}.{uuid.uuid4().hex}.tmp.pdf')
     html_uri = html_path.resolve().as_uri()
 
     with tempfile.TemporaryDirectory(prefix='snake-digest-browser-') as profile_dir:
@@ -445,7 +455,7 @@ def render_pdf_with_browser(html_path: Path, output_path: Path) -> str:
             '--print-to-pdf-no-header',
             '--allow-file-access-from-files',
             f'--user-data-dir={profile_dir}',
-            f'--print-to-pdf={output_path}',
+            f'--print-to-pdf={temporary_output}',
             html_uri,
         ]
         creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0) if os.name == 'nt' else 0
@@ -459,20 +469,26 @@ def render_pdf_with_browser(html_path: Path, output_path: Path) -> str:
             creationflags=creationflags,
         )
 
-    if not output_path.exists() or output_path.stat().st_size < 1024:
+    if result.returncode != 0 or not temporary_output.exists() or temporary_output.stat().st_size < 1024:
+        temporary_output.unlink(missing_ok=True)
         detail = (result.stderr or result.stdout or '').strip()[-1200:]
         raise RuntimeError(
             f'Headless browser PDF export failed with exit code {result.returncode}: {detail}'
         )
+    temporary_output.replace(output_path)
     return f'headless browser ({browser.name})'
 
 
 def render_pdf_with_weasyprint(html_path: Path, output_path: Path) -> str:
     from weasyprint import HTML
 
-    HTML(filename=str(html_path), base_url=str(html_path.parent)).write_pdf(str(output_path))
-    if not output_path.exists() or output_path.stat().st_size < 1024:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_output = output_path.with_name(f'.{output_path.stem}.{uuid.uuid4().hex}.tmp.pdf')
+    HTML(filename=str(html_path), base_url=str(html_path.parent)).write_pdf(str(temporary_output))
+    if not temporary_output.exists() or temporary_output.stat().st_size < 1024:
+        temporary_output.unlink(missing_ok=True)
         raise RuntimeError('WeasyPrint did not create a usable PDF')
+    temporary_output.replace(output_path)
     return 'WeasyPrint'
 
 
@@ -539,15 +555,22 @@ def build_cover(title: str, subtitle: str, author: str, meta_line: str, cover_im
 '''
 
 
-def md_to_html(md_text: str, title: str | None = None, subtitle: str = '一口气搞懂一件事', author: str = '@潇潇蛇', meta_line: str | None = None, qr_image: str | None = None, cover_image: str | None = None) -> str:
+def md_to_html(md_text: str, title: str | None = None, subtitle: str = '一口气搞懂一件事', author: str = '@潇潇蛇', meta_line: str | None = None, qr_image: str | None = None, cover_image: str | None = None, page_size: str = 'A4', css_overrides: str = '') -> str:
     actual_title = title or extract_title(md_text)
     actual_meta = meta_line or extract_meta(md_text)
     body_md = strip_first_h1(md_text, actual_title)
     body_html = md_body_to_html(body_md)
+    normalized_page_size = page_size.upper()
+    if normalized_page_size not in PAGE_SIZES:
+        raise ValueError(f'unsupported page size: {page_size}')
+    page_width, page_height, _ = PAGE_SIZES[normalized_page_size]
     css = (CSS_TEMPLATE
+        .replace('PAGE_SIZE', normalized_page_size)
+        .replace('PAGE_WIDTH', page_width)
+        .replace('PAGE_HEIGHT', page_height)
         .replace('HEADER_TEXT', html.escape(f'SNAKE DIGEST · {actual_title}'))
         .replace('FOOTER_LEFT_TEXT', html.escape(author or '@潇潇蛇'))
-    )
+    ) + ('\n' + css_overrides if css_overrides else '')
     cover = build_cover(actual_title, subtitle, author, actual_meta, cover_image, qr_image)
     return f'''<!doctype html>
 <html lang="zh-CN">
@@ -576,6 +599,8 @@ def main() -> None:
     parser.add_argument('--meta', default=None)
     parser.add_argument('--qr-image', default=None)
     parser.add_argument('--cover-image', default=None)
+    parser.add_argument('--page-size', choices=['A4', 'A5'], default='A4')
+    parser.add_argument('--css-file', default=None, help='optional CSS appended after the default theme')
     parser.add_argument('--html-out', default=None, help='optional HTML output path')
     parser.add_argument('--engine', choices=['auto', 'browser', 'weasyprint'], default='auto')
     args = parser.parse_args()
@@ -583,7 +608,8 @@ def main() -> None:
     md_text = read_file(args.input)
     actual_title = args.title or extract_title(md_text)
     output_path = resolve_output_path(args.output, actual_title)
-    html_text = md_to_html(md_text, actual_title, args.subtitle, args.author, args.meta, args.qr_image, args.cover_image)
+    css_overrides = Path(args.css_file).read_text(encoding='utf-8') if args.css_file else ''
+    html_text = md_to_html(md_text, actual_title, args.subtitle, args.author, args.meta, args.qr_image, args.cover_image, args.page_size, css_overrides)
 
     html_path = Path(args.html_out) if args.html_out else output_path.with_suffix('.html')
     html_path.write_text(html_text, encoding='utf-8')

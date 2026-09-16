@@ -2,6 +2,8 @@
   "title": "文章标题",
   "slug": "article-slug",
   "generation_mode": "chatgpt-image-model-raster-only",
+  "style_profile": "warm-paper",
+  "max_body_hero": 1,
   "style": "warm-toned watercolor editorial illustration, muted low-saturation warm yellow, ivory, sepia and soft brown palette, subtle aged paper feeling, clean composition, subject clearly readable, soft golden lighting, no large saturated color blocks, no neon colors, no text, no labels, no letters, no numbers in the image",
   "images": [
     {
@@ -9,11 +11,12 @@
       "filename": "img_cover.png",
       "role": "cover",
       "layout": "cover",
-      "size": "2160x3840",
+      "size": "1024x1536",
+      "orientation": "portrait",
       "insert_after_heading": null,
       "caption": "封面图",
-      "prompt_zh": "竖版封面图，宏观、概念化、有视觉冲击力。",
-      "prompt_en": "warm-toned watercolor editorial illustration, vertical 9:16 cover image, grand but restrained composition, one clear symbolic visual metaphor for the article topic, muted ivory sepia and soft brown palette, subtle aged-paper feeling, soft golden lighting, no large saturated color blocks, no text, no labels, no letters, no numbers"
+      "prompt_zh": "竖版封面图，宏观、概念化、有视觉冲击力。四周保留裁切安全区，下部为标题面板留出安静区域。",
+      "prompt_en": "warm-toned watercolor editorial illustration, portrait cover image, grand but restrained composition, one clear symbolic visual metaphor for the article topic, keep important subjects inside the central 80 percent safe area, leave the lower 35 percent visually quiet for a title panel, muted ivory sepia and soft brown palette, subtle aged-paper feeling, soft golden lighting, no large saturated color blocks, no text, no labels, no letters, no numbers"
     },
     {
       "id": "img_01",
@@ -21,6 +24,7 @@
       "role": "body",
       "layout": "normal",
       "size": "3840x2160",
+      "orientation": "landscape",
       "insert_after_heading": "章节标题",
       "caption": "图片说明文字",
       "prompt_zh": "中文画面说明。",

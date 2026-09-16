@@ -74,6 +74,7 @@ def main() -> None:
 
     placeholders = PLACEHOLDER_RE.findall(text)
     placeholder_ids = [p[0] for p in placeholders]
+    placeholder_layouts = {p[0]: (p[2] or 'normal') for p in placeholders}
     plan = load_json(plan_path)
     generation_mode = plan.get('generation_mode')
     if generation_mode != 'chatgpt-image-model-raster-only':
@@ -95,11 +96,12 @@ def main() -> None:
         if args.strict:
             errors.append('strict mode requires each planned body image to appear once')
 
+    max_body_hero = int(plan.get('max_body_hero', 1))
     body_hero_count = sum(1 for item in images if item.get('role') != 'cover' and item.get('layout') == 'hero')
-    if body_hero_count > 1:
-        warnings.append(f'image_plan has {body_hero_count} body hero images; use normal layout by default to preserve paper-like visual consistency')
+    if body_hero_count > max_body_hero:
+        warnings.append(f'image_plan has {body_hero_count} body hero images; configured maximum is {max_body_hero}')
         if args.strict:
-            errors.append('strict mode allows at most 1 body hero image')
+            errors.append(f'strict mode allows at most {max_body_hero} body hero image(s)')
 
     if 'img_cover' not in plan_ids:
         errors.append('image_plan has no img_cover')
@@ -108,6 +110,7 @@ def main() -> None:
         errors.append('strict mode requires Pillow to inspect raster image dimensions')
 
     style_text = str(plan.get('style') or '')
+    style_profile = str(plan.get('style_profile') or 'warm-paper')
     seen_hashes: dict[str, str] = {}
 
     for item in images:
@@ -125,6 +128,10 @@ def main() -> None:
             errors.append(f'cover image must use cover layout: {img_id}')
         if role != 'cover' and layout not in {'normal', 'hero', 'small'}:
             errors.append(f'invalid body image layout for {img_id}: {layout!r}')
+        if role != 'cover' and img_id in placeholder_layouts and placeholder_layouts[img_id] != layout:
+            errors.append(
+                f'layout mismatch for {img_id}: image_plan={layout!r}, article={placeholder_layouts[img_id]!r}'
+            )
         if role != 'cover' and img_id not in placeholder_ids:
             warnings.append(f'planned image not referenced in article: {img_id}')
             if args.strict:
@@ -134,7 +141,7 @@ def main() -> None:
             if args.strict:
                 errors.append(f'strict mode requires prompt_en: {img_id}')
         combined_style = f'{style_text} {prompt or ""}'.lower()
-        if not any(term in combined_style for term in ('muted', 'low-saturation', 'low saturation', 'sepia', 'aged paper')):
+        if style_profile == 'warm-paper' and not any(term in combined_style for term in ('muted', 'low-saturation', 'low saturation', 'sepia', 'aged paper')):
             warnings.append(f'image prompt lacks the muted aged-paper style: {img_id}')
             if args.strict:
                 errors.append(f'strict mode requires the shared muted paper style: {img_id}')
@@ -173,14 +180,21 @@ def main() -> None:
                     warnings.append(f'image resolution is too small for final PDF: {filename} {w}x{h}')
                     if args.strict:
                         errors.append(f'strict mode requires both image edges to be at least 800 px: {filename}')
-                if role == 'cover' and h / max(w, 1) < 1.2:
-                    warnings.append(f'cover image is not sufficiently portrait: {filename} {w}x{h}')
+                orientation = item.get('orientation') or ('portrait' if role == 'cover' else 'landscape')
+                if orientation not in {'portrait', 'landscape', 'square', 'any'}:
+                    errors.append(f'invalid orientation for {img_id}: {orientation!r}')
+                if orientation == 'portrait' and h / max(w, 1) < 1.2:
+                    warnings.append(f'image is not sufficiently portrait: {filename} {w}x{h}')
                     if args.strict:
-                        errors.append(f'strict mode requires a portrait cover image: {filename}')
-                if role != 'cover' and w / max(h, 1) < 1.2:
-                    warnings.append(f'body image is not sufficiently landscape: {filename} {w}x{h}')
+                        errors.append(f'strict mode requires a portrait image: {filename}')
+                if orientation == 'landscape' and w / max(h, 1) < 1.2:
+                    warnings.append(f'image is not sufficiently landscape: {filename} {w}x{h}')
                     if args.strict:
-                        errors.append(f'strict mode requires a landscape body image: {filename}')
+                        errors.append(f'strict mode requires a landscape image: {filename}')
+                if orientation == 'square' and not 0.85 <= w / max(h, 1) <= 1.15:
+                    warnings.append(f'image is not sufficiently square: {filename} {w}x{h}')
+                    if args.strict:
+                        errors.append(f'strict mode requires a square image: {filename}')
             except Exception as exc:
                 warnings.append(f'cannot inspect image {filename}: {exc}')
                 if args.strict:
@@ -211,6 +225,10 @@ def main() -> None:
             warnings.append('sources.md still looks empty or template-only')
             if args.strict:
                 errors.append('strict mode requires completed source notes')
+        if not re.search(r'https?://\S+', source_text):
+            warnings.append('sources.md has no source URL')
+            if args.strict:
+                errors.append('strict mode requires at least one source URL in sources.md')
 
     if not re.search(r'^#{1,3}\s+.*资料来源', text, re.M):
         warnings.append('article has no sources or further-reading section')

@@ -68,6 +68,8 @@ def main() -> None:
     parser.add_argument('--meta', default=None)
     parser.add_argument('--qr-image', default=None)
     parser.add_argument('--cover-image', default=None)
+    parser.add_argument('--page-size', choices=['A4', 'A5'], default='A4')
+    parser.add_argument('--css-file', default=None, help='optional CSS appended after the default theme')
     parser.add_argument('--strict', action='store_true', help='fail when any image is missing')
     parser.add_argument('--engine', choices=['auto', 'browser', 'weasyprint'], default='auto')
     args = parser.parse_args()
@@ -86,6 +88,7 @@ def main() -> None:
 
     actual_title = args.title or extract_title(merged_md)
     output_path = resolve_output_path(args.output, actual_title)
+    css_overrides = Path(args.css_file).read_text(encoding='utf-8') if args.css_file else ''
     html_text = md_to_html(
         merged_md,
         title=actual_title,
@@ -94,6 +97,8 @@ def main() -> None:
         meta_line=args.meta,
         qr_image=args.qr_image,
         cover_image=args.cover_image,
+        page_size=args.page_size,
+        css_overrides=css_overrides,
     )
 
     html_path = output_path.with_suffix('.html')

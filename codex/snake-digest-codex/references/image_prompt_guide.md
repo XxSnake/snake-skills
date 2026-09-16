@@ -1,5 +1,7 @@
 # Snake Digest Codex 图片生成指南
 
+此文件描述默认纸感风格；用户指定其他风格时服从请求。`image_plan.json` 用 `style_profile` 区分 `warm-paper` 与自定义风格，用 `max_body_hero` 记录本册允许的大图数量，每张图可用 `orientation` 指定 `portrait`、`landscape`、`square` 或 `any`。严格检查验证这些显式选择，不把默认审美误当成用户不可覆盖的硬规则。
+
 ## 统一风格
 
 默认使用：
@@ -25,12 +27,16 @@ warm-toned watercolor editorial illustration, muted low-saturation warm yellow, 
 muted palette, low saturation, colors harmonized with aged ivory paper, no large saturated color blocks, no neon colors, no commercial poster look
 ```
 
-## 默认尺寸
+## 尺寸与封面安全区
 
-- 封面：2160x3840，竖版 9:16
+- 封面：优先选择最接近最终页面比例的竖图；内置工具只支持固定比例时可用 1024x1536。
 - 正文：3840x2160，横版 16:9
-- 如果当前内置图片工具不支持 4K，可改用封面 1024x1536、正文 1536x1024。
+- 如果当前内置图片工具不支持 4K，可用正文 1536x1024。
 - 只允许降低尺寸，不允许用 SVG、程序绘图、占位图或二维码代替。
+
+封面使用 `background-size: cover`，可能裁去边缘。把关键主体放在中央约 80% 安全区；下部约 35% 保持安静，给标题面板留出空间。生成后必须按最终纸张比例查看裁切结果，不能只看原图。
+
+同册插画除了共享色调，还应共享笔触、材质、细节密度和反复出现的主体设计。需要保持同一人物、场景或物件时，复用已选图作为生成参考；不要只靠重复一段风格词声称一致。
 
 ## Prompt 类型
 
@@ -70,6 +76,6 @@ warm-toned watercolor editorial illustration, a chain of simple scenes connected
 4. 不要出现文字、标签、数字。
 5. 不要画真实公众人物肖像。
 6. 图片必须服务于理解，不是装饰。
-7. 最终只接受 PNG、JPG、JPEG 或 WebP 位图。严禁生成或使用 SVG，也不得把 SVG 转成位图；同样不能用 Mermaid、HTML/CSS、Matplotlib、Pillow、Canvas、占位图、图标拼贴、二维码、截图或程序绘图替代模型生成的插画。
-8. 每个不同画面单独调用一次内置工具。生成后先检查，再从 `$CODEX_HOME/generated_images/` 复制或移动到项目 `images/` 目录，并使用计划中的稳定文件名。
+7. 最终插画只接受 PNG、JPG、JPEG 或 WebP 位图。严禁用 SVG、Mermaid、HTML/CSS、Matplotlib、Pillow、Canvas、占位图、图标拼贴、二维码或截图冒充生成式插画。准确图表和文字关系可按正文需要使用 HTML 组件，不受这条插画来源规则限制。
+8. 每个不同画面单独调用一次内置工具。生成后先检查，再从工具实际返回路径复制到项目 `images/` 目录，使用计划中的稳定文件名；不要假定生成目录或提前删除原图。
 9. 不得静默切换到其他图像模型或需要 API 密钥的路线。ChatGPT 内置图像模型不可用时停止合成；只有用户明确同意时才按 `imagegen` 技能的备用流程继续。
