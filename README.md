@@ -21,6 +21,7 @@ snake-skills/
 | Skill | 说明 |
 |---|---|
 | [book-to-share-pdf](codex/book-to-share-pdf/) | 给一本书生成中文故事化拆书 PDF（泛黄纸张风格），用于读书分享/读书会。 |
+| [personal-style-advisor](codex/personal-style-advisor/) | 以中国和东亚日常审美分析人物照片，提供发型、妆容和穿搭建议，并生成三套保留本人特征的造型效果图。 |
 | [snake-digest-codex](codex/snake-digest-codex/) | 一口气搞懂一件事：在 Codex 内完成研究、写作、Image2 配图、精美 PDF 排版与交付的完整闭环。snake-digest 的 Codex 版。 |
 ### Claude Code
 
